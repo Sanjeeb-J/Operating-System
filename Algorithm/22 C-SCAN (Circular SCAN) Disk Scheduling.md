@@ -1,0 +1,231 @@
+
+---
+```c
+#include <stdio.h>
+#include <stdlib.h>
+```
+## **ALGORITHM: C-SCAN (Circular SCAN) Disk Scheduling**
+
+### **FUNCTION 1: sort()**
+
+**Input:** Array `arr[]` and integer `n` (size of array)
+
+**Output:** Array sorted in ascending order using Bubble Sort
+
+**Steps:**
+
+1. **START**
+    
+2. **Bubble Sort Algorithm:**
+    
+    - Loop from `i = 0` to `i < n - 1`
+        - Loop from `j = 0` to `j < n - i - 1`
+            - **If** `arr[j] > arr[j + 1]` **Then**
+                - **Swap:**
+                    - `temp = arr[j]`
+                    - `arr[j] = arr[j + 1]`
+                    - `arr[j + 1] = temp`
+3. **END**
+    
+```c
+void sort(int arr[], int n) {
+    for(int i = 0; i < n-1; i++)
+        for(int j = 0; j < n-i-1; j++)
+            if(arr[j] > arr[j+1]) {
+                int temp = arr[j];
+                arr[j] = arr[j+1];
+                arr[j+1] = temp;
+            }
+}
+```
+---
+
+### **MAIN FUNCTION: main()**
+
+**Input:**
+
+- Number of disk requests (n)
+- Disk request sequence (cylinder numbers)
+- Initial head position
+- Disk size (maximum cylinder number)
+- Direction (0 = left, 1 = right)
+
+**Output:**
+
+- Total seek time using C-SCAN algorithm
+
+**Steps:**
+
+1. **START**
+    
+2. **Initialize Variables:**
+    
+    - Declare `requests[100]`, `n`, `head`, `diskSize`, `totalSeek = 0`, `direction`
+```c
+    int requests[100], n, head, diskSize, totalSeek = 0;
+    int direction;
+```
+1. **Input Data:**
+    
+    - **Print** "Enter number of requests: "
+    - **Read** `n`
+        
+    - **Print** "Enter request sequence: "
+    - Loop from `i = 0` to `i < n`
+        - **Read** `requests[i]`
+    
+    - **Print** "Enter initial head position: "    
+    - **Read** `head`
+        
+    - **Print** "Enter disk size: "
+    - **Read** `diskSize`
+        
+    - **Print** "Enter direction (0 = left, 1 = right): "
+    - **Read** `direction`
+```c
+    printf("Enter number of requests: ");
+    scanf("%d", &n);
+
+    printf("Enter request sequence: ");
+    for(int i = 0; i < n; i++)
+        scanf("%d", &requests[i]);
+
+    printf("Enter initial head position: ");
+    scanf("%d", &head);
+
+    printf("Enter disk size: ");
+    scanf("%d", &diskSize);
+
+    printf("Enter direction (0 = left, 1 = right): ");
+    scanf("%d", &direction);
+```
+1. **Sort Request Sequence:**
+    
+    - **Call** `sort(requests, n)`
+```c
+    sort(requests, n);
+```
+1. **Find Pivot Point:**
+    
+    - **Declare** `index`
+    - Loop from `index = 0` to `index < n`
+        - **If** `head < requests[index]` **Then**
+            - **Break** from loop
+```c
+    int index;
+    for(index = 0; index < n; index++)
+        if(head < requests[index])
+            break;
+```
+1. **C-SCAN Scheduling (Direction = 1: Right First):**
+    
+    - **If** `direction == 1` **Then**
+        
+        - **Move Right (toward disk end):**
+            - Loop from `i = index` to `i < n`
+                - `totalSeek += abs(head - requests[i])`
+                - `head = requests[i]`
+        - **Move to Disk End:**
+            - `totalSeek += abs(head - (diskSize - 1))`
+            - (Go to rightmost cylinder)
+        - **Jump to Disk Start (no seek):**
+            - `head = 0`
+            - (Teleport to beginning, wrapping around)
+            - `totalSeek += diskSize - 1`
+            - (Add the wrap-around distance)
+        - **Move Left (toward lower cylinders):**
+            - Loop from `i = 0` to `i < index`
+                - `totalSeek += abs(head - requests[i])`
+                - `head = requests[i]`
+```c
+    if(direction == 1) {
+        for(int i = index; i < n; i++) {
+            totalSeek += abs(head - requests[i]);
+            head = requests[i];
+        }
+
+        totalSeek += abs(head - (diskSize - 1));
+        head = 0;
+        totalSeek += diskSize - 1;
+
+        for(int i = 0; i < index; i++) {
+            totalSeek += abs(head - requests[i]);
+            head = requests[i];
+        }
+    }
+```
+1. **C-SCAN Scheduling (Direction = 0: Left First):**
+    
+    - **Else** (direction == 0)
+        
+        - **Move Left (toward disk start):**
+            - Loop from `i = index - 1` to `i >= 0` (decrement)
+                - `totalSeek += abs(head - requests[i])`
+                - `head = requests[i]`
+        - **Move to Disk Start:**
+            - `totalSeek += abs(head - 0)`
+            - (Go to leftmost cylinder)
+        - **Jump to Disk End (no seek):**
+            - `head = diskSize - 1`
+            - (Teleport to end, wrapping around)
+            - `totalSeek += diskSize - 1`
+            - (Add the wrap-around distance)
+        - **Move Right (toward higher cylinders):**
+            - Loop from `i = n - 1` to `i >= index` (decrement)
+                - `totalSeek += abs(head - requests[i])`
+                - `head = requests[i]`
+```c
+    else { 
+        for(int i = index-1; i >= 0; i--) {
+            totalSeek += abs(head - requests[i]);
+            head = requests[i];
+        }
+
+        totalSeek += abs(head - 0);
+        head = diskSize - 1;
+        totalSeek += diskSize - 1;
+
+        for(int i = n-1; i >= index; i--) {
+            totalSeek += abs(head - requests[i]);
+            head = requests[i];
+        }
+    }
+```
+1. **Output Results:**
+    
+    - **Print** "Total Seek Time (C-SCAN): " followed by `totalSeek`
+```c
+    printf("Total Seek Time (C-SCAN): %d\n", totalSeek);
+```
+1. **Return** 0
+    
+2. **END**
+    
+
+---
+
+## **How to Execute:**
+
+```bash
+# Compile
+gcc program.c -o program
+
+# Run
+./program
+```
+
+**Example Input 1 (Direction Right):**
+
+```
+Enter number of requests: 8
+Enter request sequence: 82 170 43 140 24 16 190 130
+Enter initial head position: 50
+Enter disk size: 200
+Enter direction (0 = left, 1 = right): 1
+```
+
+**Example Output 1:**
+
+```
+Total Seek Time (C-SCAN): 391
+```
